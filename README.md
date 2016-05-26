@@ -28,8 +28,12 @@ the `nc -vl port2` command will keep listening, and the while statement will not
 
 Now just fix it by connecting to **linux_server_ip:port2** to relief it from infinite listening.
 
+!!! Hearing about broken after long time connection.
+
 ###TODO
-- Handle connection fails
+- connect to service only when notice that client is connecting
+  (this is hard to design)
+- not to connect to ip1:port1 until ip2:port2 is connected
 - prevent suspending listen on the linux_server
 
 ###NOTES
