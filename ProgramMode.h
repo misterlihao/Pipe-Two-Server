@@ -12,21 +12,21 @@ struct ProgramMode {
 
 struct UsageMode : public ProgramMode {
     virtual void run(){
-        std::printf ("command ip1 port1 ip2 port2\n");
+        std::printf ("command service_port ip port\n");
     }
 };
 
 struct ExecuteMode : public ProgramMode {
-    ExecuteMode(std::string ip1, int port1, std::string ip2, int port2) :
-        port1_(port1), port2_(port2),
-        sock1_(INVALID_SOCKET), sock2_(INVALID_SOCKET),
-        ip1_(ip1), ip2_(ip2)
+    ExecuteMode(int service_port, std::string ip, int port) :
+        service_port_(service_port), redir_port_(port),
+        local_sock_(INVALID_SOCKET), redir_sock_(INVALID_SOCKET),
+        redir_ip_(ip)
         {}
     virtual void run();
 private:
-    int          port1_, port2_;
-    SOCKET       sock1_, sock2_;
-    std::string    ip1_,   ip2_;
+    int          service_port_, redir_port_;
+    SOCKET       local_sock_, redir_sock_;
+    std::string    redir_ip_;
 
     void connectBothServer();
     void keepPiping();

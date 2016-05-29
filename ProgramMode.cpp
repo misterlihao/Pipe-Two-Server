@@ -18,8 +18,8 @@ void ExecuteMode::run() {
         keepPiping();
         PRINT_LOG("connection over\n");
 
-        closesocket(sock1_);
-        closesocket(sock2_);
+        closesocket(local_sock_);
+        closesocket(redir_sock_);
     }
 
     WSACleanup();
@@ -31,8 +31,8 @@ void ExecuteMode::keepPiping() {
 
     while (true) {
         FD_ZERO(&read_sock_set);
-        FD_SET(sock1_, &read_sock_set);
-        FD_SET(sock2_, &read_sock_set);
+        FD_SET(local_sock_, &read_sock_set);
+        FD_SET(redir_sock_, &read_sock_set);
         int const iResult = select(2, &read_sock_set, NULL, NULL, NULL);
         if (iResult == SOCKET_ERROR) {
             PRINT_LOG("select failed. GetLastError: %lu\n", GetLastError());
@@ -40,32 +40,36 @@ void ExecuteMode::keepPiping() {
         }
 
         // TODO : recv, send error handling
-        if (FD_ISSET(sock1_, &read_sock_set)) {
-            int const cnt = recv(sock1_, buffer, sizeof(buffer), 0);
+        if (FD_ISSET(local_sock_, &read_sock_set)) {
+            int const cnt = recv(local_sock_, buffer, sizeof(buffer), 0);
             if (cnt > 0) {
-                send(sock2_, buffer, cnt, 0);
+                send(redir_sock_, buffer, cnt, 0);
             }
             else {
-                PRINT_LOG("%s:%d closed.\n", ip1_.c_str(), port1_);
+                PRINT_LOG("localhost:%d closed.\n", service_port_);
                 return;
             }
         }
-        if (FD_ISSET(sock2_, &read_sock_set)) {
-            int const cnt = recv(sock2_, buffer, sizeof(buffer), 0);
+        if (FD_ISSET(redir_sock_, &read_sock_set)) {
+            int const cnt = recv(redir_sock_, buffer, sizeof(buffer), 0);
             if (cnt > 0)
-                send(sock1_, buffer, cnt, 0);
+                send(local_sock_, buffer, cnt, 0);
             else {
-                PRINT_LOG("%s:%d closed.\n", ip2_.c_str(), port2_);
+                PRINT_LOG("%s:%d closed.\n", redir_ip_.c_str(), redir_port_);
                 return;
             }
         }
     }
 }
 void ExecuteMode::connectBothServer() {
-    if (connect_socket(ip1_.c_str(), port1_, sock1_) == FAIL)
-        PRINT_LOG("connect %s : %d failed.\n", ip1_.c_str(), port1_);
+    if (connect_socket(redir_ip_.c_str(), redir_port_, redir_sock_) == FAIL) {
+        PRINT_LOG("connect %s : %d failed.\n", redir_ip_.c_str(), redir_port_);
+        return ;
+    }
 
-    if (connect_socket(ip2_.c_str(), port2_, sock2_) == FAIL)
-        PRINT_LOG("connect %s : %d failed.\n", ip2_.c_str(), port2_);
+    char c;
+    recv(redir_sock_, &c, 1, 0); // block until got one char, and discard it
+    if (connect_socket("127.0.0.1", service_port_, local_sock_) == FAIL)
+        PRINT_LOG("connect localhost : %d failed.\n", service_port_);
 }
 

@@ -6,14 +6,13 @@
 using namespace std;
 
 ProgramMode* GetProgramMode(int argc, char **argv) {
-    if (argc == 5) {
+    if (argc == 4) {
         // TODO : *minor* abort when argv are not valid
-        string ip1   = argv[1];
-        string ip2   = argv[3];
-        int    port1 = atoi(argv[2]);
-        int    port2 = atoi(argv[4]);
+        string ip2   = argv[2];
+        int    port1 = atoi(argv[1]);
+        int    port2 = atoi(argv[3]);
 
-        return new ExecuteMode(ip1, port1, ip2, port2);
+        return new ExecuteMode(port1, ip2, port2);
     }
 
     return new UsageMode();
