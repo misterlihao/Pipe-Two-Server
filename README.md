@@ -38,7 +38,8 @@ the `server-on-linux` command will keep listening, and the while statement will 
 Now just fix it by connecting to **linux_server_ip:port2** to relief it from infinite listening.
 
 ###TODO
-- prevent suspending listen on the linux_server
+- prevent suspending listen on the linux_server (the bug)
+- support of ssh connection
 
 ###NOTES
 tested service (works with this project)
